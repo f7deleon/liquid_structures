@@ -1,0 +1,64 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           liquid-structures
+version:        0.1.0.0
+description:    A set of structures that use LiquidHaskell to check some of their properties
+homepage:       https://github.com/f7deleon/tesis#readme
+bug-reports:    https://github.com/f7deleon/tesis/issues
+author:         Felipe de Leon
+maintainer:     f7.deleon@gmail.com
+copyright:      2022 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/f7deleon/tesis
+  subdir: liquid-structures
+
+library
+  exposed-modules:
+    Basics
+    ABBTreesExt
+    ABBTreesInt
+    AVLTrees
+    Examples
+    LiquidVector
+    SortedList
+    ImprovedList
+    BraunTrees
+    IArray
+    IRow
+    ArrayXS
+  hs-source-dirs:
+      src/
+  build-depends:
+      liquid-base
+    , liquid-ghc-prim
+    , liquid-prelude
+    , liquidhaskell
+    , criterion
+  default-language: Haskell2010
+  ghc-options: -O -fplugin=LiquidHaskell
+
+executable bench
+  ghc-options: -O -fplugin=LiquidHaskell
+  main-is: Main.hs
+  hs-source-dirs:
+    app,
+    src
+  build-depends:
+      liquid-base
+    , liquid-ghc-prim
+    , liquid-prelude
+    , liquidhaskell
+    , criterion
+  default-language:   Haskell2010
