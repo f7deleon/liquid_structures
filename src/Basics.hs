@@ -1,9 +1,10 @@
 {-@ LIQUID "--no-termination" @-}
-{-@ LIQUID "--short-names" @-}
+
+
 {-# LANGUAGE GADTs #-}
 
 module Basics where
-import Prelude hiding (min, max)
+import Prelude hiding (min, max, even)
 
 {-@ inline max @-}
 {-@ max :: (Ord a) => a -> a -> a @-}

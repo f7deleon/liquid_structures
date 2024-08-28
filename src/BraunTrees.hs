@@ -7,7 +7,7 @@
 
 module BraunTrees where
 import Language.Haskell.Liquid.ProofCombinators
-import Prelude hiding (even, abs, max, min, exponent, take, drop, repeat, head, tail)
+import Prelude hiding (even, abs, max, min, exponent, take, drop, repeat, head, tail, lookup)
 import ImprovedList
 import Basics
 
@@ -153,10 +153,10 @@ splice :: (Eq a) => [a] -> [a] -> [a]
 splice (x:xs) ys = x : splice ys (xs)
 splice [] ys = ys
 
-{-@ lookup2 :: n: Nat -> ArrayGE a { n + 1 } -> a @-}
-lookup2 :: Int -> Array a -> a
-lookup2 n arr = lookup1 (n + 1) arr
-{-@ reflect  lookup2 @-}
+{-@ lookup :: n: Nat -> ArrayGE a { n + 1 } -> a @-}
+lookup :: Int -> Array a -> a
+lookup n arr = lookup1 (n + 1) arr
+{-@ reflect  lookup @-}
 
 {-@ update :: n: Nat -> a -> arr : ArrayGE a n -> ArrayNON1 a { nodeCount arr } { n + 1 } @-}
 {-@ reflect update @-}
@@ -198,21 +198,21 @@ list_tree_lookup_equallity (x:xs) ys 0 = lookupL 0 (splice (x:xs) ys) == lookupL
 list_tree_lookup_equallity (_:xs) ys n = list_tree_lookup_equallity ys xs (n - 1)
 
 
-{-@ list_array_equality :: arr : { Array a | nodeCount arr > 0 } -> n : { Nat | n < nodeCount arr } -> { lookup2 n arr == lookupL n (list arr) } @-}
+{-@ list_array_equality :: arr : { Array a | nodeCount arr > 0 } -> n : { Nat | n < nodeCount arr } -> { lookup n arr == lookupL n (list arr) } @-}
 list_array_equality :: (Eq a) => Array a -> Int -> Proof
-list_array_equality  arr@(Node v l r) 0 = lookup2 0 arr == lookupL 0 (list arr)
+list_array_equality  arr@(Node v l r) 0 = lookup 0 arr == lookupL 0 (list arr)
                                 === v == lookupL 0 (v : (splice (list l ) (list r)))
                                 === v == v *** QED
 list_array_equality arr@(Node v l r) n
-  | even n = lookup2 n arr == lookupL n (list arr)
+  | even n = lookup n arr == lookupL n (list arr)
               === lookup1 (n + 1) (arr) == lookupL n (v : (splice (list l) (list r)))
               === lookup1 (div n 2) r == lookupL (n - 1) (splice (list l) (list r)) ? list_tree_lookup_equallity (list l) (list r) (n - 1)
-              === lookup2 (div (n - 1) 2) r == lookupL (div (n - 1) 2) (list r) ? list_array_equality r (div (n - 1) 2)
+              === lookup (div (n - 1) 2) r == lookupL (div (n - 1) 2) (list r) ? list_array_equality r (div (n - 1) 2)
               *** QED
-  | otherwise = lookup2 n arr == lookupL n (list arr)
+  | otherwise = lookup n arr == lookupL n (list arr)
               === lookup1 (n + 1) arr == lookupL n (v : (splice (list l) (list r)))
               === lookup1 (div (n + 1) 2) l == lookupL (n - 1) (splice (list l) (list r)) ? list_tree_lookup_equallity (list l) (list r) (n -1)
-              === lookup2 (div (n - 1) 2) l == lookupL (div (n - 1) 2) (list l) ? list_array_equality l (div (n - 1) 2)
+              === lookup (div (n - 1) 2) l == lookupL (div (n - 1) 2) (list l) ? list_array_equality l (div (n - 1) 2)
               *** QED
 
 {-@ del_hi :: n : Nat -> ArrayN a n -> { a : Array a | n > 0 => nodeCount a == n - 1  } @-}
