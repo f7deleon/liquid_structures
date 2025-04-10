@@ -26,26 +26,28 @@ source-repository head
 
 library
   exposed-modules:
-    Basics
-    ABBTreesExt
-    ABBTreesInt
-    AVLTrees
-    Examples
-    LiquidVector
-    SortedList
-    ImprovedList
-    BraunTrees
-    IArray
-    IRow
-    ArrayXS
+--    Basics
+--    ABBTreesExt
+--    ABBTreesInt
+--    AVLTrees
+--    Examples
+--    LiquidVector
+--    SortedList
+--    ImprovedList
+    BraunTree
+    BasicOperations
+    Proofs
+    OptimizedOperations
   hs-source-dirs:
-      src/
+      src/,
+      src/braun_trees
   build-depends:
-      liquid-base
-    , liquid-ghc-prim
-    , liquid-prelude
-    , liquidhaskell
-    , criterion
+      liquid-prelude,
+      liquid-vector,
+      liquidhaskell,
+      base,
+      containers,
+      vector
   default-language: Haskell2010
   ghc-options: -O -fplugin=LiquidHaskell
 
@@ -56,9 +58,10 @@ executable bench
     app,
     src
   build-depends:
-      liquid-base
-    , liquid-ghc-prim
-    , liquid-prelude
-    , liquidhaskell
-    , criterion
+    liquid-prelude,
+    liquid-vector,
+    liquidhaskell,
+    base,
+    containers,
+    vector
   default-language:   Haskell2010
