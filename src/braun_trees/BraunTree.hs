@@ -7,7 +7,7 @@
 
 module BraunTree where
 import Language.Haskell.Liquid.ProofCombinators
-import Prelude hiding (even, abs, max, min, exponent, take, drop, repeat, head, tail, lookup)
+import Prelude hiding (even, abs, max, pow, min, exponent, take, drop, repeat, head, tail, lookup)
 import ImprovedList
 import Basics
 
@@ -53,6 +53,13 @@ right (Node _ _ r) = r
 nodeCount :: Tree a -> Int
 nodeCount (Node _ l r) = 1 + nodeCount l + nodeCount r
 nodeCount Nil = 0
+{-
+{-@ measure nc @-}
+{-@ nc :: t : Tree a -> n : { Nat | n == nodeCount t } @-}
+nc :: Tree a -> Int
+nc (Node _ l r) = 1 + nc l + nc r
+nc (Nil) = 0 
+-}
 
 {-@ reflect height @-}
 {-@ height :: t: Tree a -> i : { Nat | i >= minHeight t }  @-}
@@ -66,29 +73,61 @@ minHeight :: Tree a -> Int
 minHeight (Node _ l r) = 1 + min (minHeight l) (minHeight r)
 minHeight Nil = 0
 
+{-@ reflect powTree @-}
+powTree :: Tree a -> Int
+powTree (Nil) = 1
+powTree (Node _ l r) 
+  | h l >= h r = 2 * (powTree l)
+  | otherwise = 2 * (powTree r)
+
+{-@ measure h @-}
+{-@ h :: t: Tree a -> i : { Nat | i >= mh t }  @-}
+h :: Tree a -> Int
+h (Node _ l r) 
+  | hl >= hr = 1 + hl
+  | otherwise = 1 + hr
+  where 
+    hl = h l
+    hr = h r
+h Nil = 0
+
+{-@ measure mh @-}
+{-@ mh :: t : Tree a -> Nat @-}
+mh :: Tree a -> Int
+mh (Node _ l r) 
+    | ml < mr = 1 + ml
+    | otherwise = 1 + mr 
+    where
+     ml = mh l
+     mr = mh r
+mh Nil = 0
+
 {-@ reflect balanced @-}
 balanced :: Tree a -> Bool
-balanced t = height t - minHeight t <= 1 
+balanced (Nil) = True
+balanced t@(Node _ l r) = balanced l && balanced r && h t - mh t <= 1 
+
+{-@ type BTree a = { t: Tree a | balanced t } @-}
+
+{-@ reflect pow2 @-}
+{-@ pow2 :: Nat -> Nat @-}
+pow2 :: Int -> Int
+pow2 0 = 1
+pow2 n = 2 * pow2 (n - 1)
 
 {-@ reflect log2L @-}
-log2L :: Int -> Int 
+{-@ log2L :: Nat -> Nat @-}
+log2L :: Int -> Int
 log2L n
-  | n > 1 = 1 + log2L(div n 2)
-  | otherwise =  0
+  | n > 1     = 1 + log2L (div n 2)
+  | otherwise = 0
 
-{-@ reflect log2H @-}
-log2H :: Int -> Int
-log2H n
-  | n < 1 = 0
-  | pow 2 low == n = low
-  | otherwise = low + 1
-  where
-    low = log2L n
-
-{-@ reflect pow @-}
-pow :: Int -> Int -> Int
-pow _ 0 = 1
-pow p n = p* (pow p (n - 1))
+{-@ reflect ceilLog @-}
+ceilLog :: Int -> Int
+ceilLog n
+  | n <= 1    = 0
+  | pow2 (log2L n) == n = log2L n
+  | otherwise = log2L n + 1
 
 {-@ reflect braun @-}
 {-@ braun :: Tree a -> Bool @-}

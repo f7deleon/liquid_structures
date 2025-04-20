@@ -1,0 +1,87 @@
+{-@ node_count_height_pow :: t :  BTree a  -> { nodeCount t <= pow2 (h t) - 1} @-}
+node_count_height_pow :: Tree a -> Proof
+node_count_height_pow (Nil) = ()
+node_count_height_pow t@(Node _ Nil Nil) = ()
+node_count_height_pow t@(Node _ l r) 
+      | h l >= h r && nodeCount l > nodeCount r = nodeCount t  <= pow2 (h t) - 1
+                  === 1 + nodeCount l + nodeCount r <= pow2 (1 + h l) - 1
+                  === 1 + nodeCount l + nodeCount r <= 2 * pow2 (h l) - 1 
+                  ? (1 + nodeCount l + nodeCount r <=  1 + nodeCount l + nodeCount l) 
+                  ? (
+                      nodeCount l + nodeCount l + 1 <= 2 * pow2 (h l) - 1
+                      === 2 * nodeCount l <= 2 * pow2 (h l) - 2
+                      === nodeCount l <= pow2 (h l) - 1
+                      ? node_count_height_pow l
+                      *** QED)
+                  *** QED
+      | h l < h r && nodeCount l < nodeCount r = nodeCount t  <= pow2 (h t) - 1
+                  === 1 + nodeCount l + nodeCount r <= pow2 (1 + h r) - 1
+                  === 1 + nodeCount l + nodeCount r <= 2 * pow2 (h r) - 1 
+                  ? (1 + nodeCount l + nodeCount r <= 1 + nodeCount r + nodeCount r) 
+                  ? (
+                      nodeCount r + nodeCount r + 1 <= 2 * pow2 (h r) - 1
+                      === 2 * nodeCount r <= 2 * pow2 (h r) -2
+                      === nodeCount r <= pow2 (h r) - 1
+                      ? node_count_height_pow r
+                      *** QED)
+                  *** QED
+      | h l >= h r && nodeCount l < nodeCount r = nodeCount t <= pow2 (h t) -1
+                  === 1 + nodeCount l + nodeCount r <= pow2 (1 + h l) -1
+                  === 1 + nodeCount l + nodeCount r <= 2 * pow2 (h l) - 1
+                  ? (1 + nodeCount l + nodeCount r <= nodeCount r + nodeCount r + 1)
+                  ? (
+                    nodeCount r + nodeCount r + 1 <= 2 * pow2 (h l) - 1
+                    ===  2 * (nodeCount r) <= 2 * pow2 (h l) - 2
+                    === nodeCount r <= pow2 (h l) - 1 ? (pow2 (h r) -1 <= pow2 (h l) -1)
+                    ? (nodeCount r <= pow2 (h r) - 1 ? node_count_height_pow r *** QED)
+                    )
+                  *** QED
+      | h l < h r && nodeCount l > nodeCount r = nodeCount t <= pow2 (h t) -1
+                  === 1 + nodeCount l + nodeCount r <= pow2 (1 + h r) -1
+                  === 1 + nodeCount l + nodeCount r <= 2 * pow2 (h r) -1
+                  ? (1 + nodeCount l + nodeCount r <= nodeCount l + nodeCount l + 1)
+                  ? (
+                    nodeCount l + nodeCount l + 1 <= 2 * pow2 (h r) -1
+                    ===  2 * (nodeCount l) <= 2 * pow2 (h r) - 2 
+                    === nodeCount l <= pow2 (h r) -1 ? (pow2 (h l) -1 <= pow2 (h r) -1)
+                    ? (nodeCount l <= pow2 (h l) -1 ? node_count_height_pow l *** QED)
+                    )
+                  *** QED
+      | h l < h r && nodeCount l == nodeCount r = nodeCount t <= pow2 (h t) -1
+                  === 1 + nodeCount l + nodeCount r <= pow2 (1 + h r) -1
+                  === 1 + nodeCount l + nodeCount r <= 2 * pow2 (h r) -1
+                  === 2 + nodeCount l + nodeCount l <= 2 * pow2 (h r)
+                  ? (2 * pow2 (h l) <= 2 * pow2 (h r))
+                  ? (
+                    2 + nodeCount l + nodeCount l <= 2 * pow2 (h l) 
+                    === 2 + 2 * nodeCount l <= 2 * pow2 (h l)
+                    === 1 + nodeCount l <= pow2 (h l)
+                    === nodeCount l <= pow2 (h l) - 1
+                    ? node_count_height_pow l 
+                    *** QED
+                  )
+                  *** QED
+      | h l > h r && nodeCount l == nodeCount r = nodeCount t <= pow2 (h t) -1
+                  === 1 + nodeCount l + nodeCount r <= pow2 (1 + h l) -1
+                  === 1 + nodeCount l + nodeCount r <= 2 * pow2 (h l) -1
+                  === 2 + nodeCount r + nodeCount r  <= 2 * pow2 (h l)
+                  ? (2 * pow2 (h r) <= 2 * pow2 (h l))
+                  ? (
+                    2 + nodeCount r + nodeCount r <= 2 * pow2 (h r)
+                    === 2 + 2 * nodeCount r <= 2 * pow2 (h r)
+                    === 1 + nodeCount r <= pow2 (h r)
+                    ? node_count_height_pow r 
+                    *** QED
+                  ) 
+                  *** QED
+      | h l == h r && nodeCount l == nodeCount r = nodeCount t <= pow2 (h t) - 1
+                  === 1 + nodeCount l + nodeCount r <= pow2 (1 + h l) -1
+                  === 1 + nodeCount l + nodeCount l <= 2 * pow2 (h l) -1
+                  === 1 + 2 * nodeCount l <= 2 * pow2 (h l) - 1
+                  === 2 + 2 * nodeCount l <= 2 * pow2 (h l)
+                  === 1 + nodeCount l <= pow2 (h l)
+                  === nodeCount l <= pow2 (h l) - 1
+                  ? node_count_height_pow l
+                  *** QED
+
+

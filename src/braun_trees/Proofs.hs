@@ -13,22 +13,6 @@ import BasicOperations
 import ImprovedList
 import Basics
 
-
-
-{-@ ple balance_log @-}
-{-@ balance_log :: t : { Tree a | balanced t } -> { minHeight t == log2L (nodeCount t) }@-}
-balance_log :: Tree a -> Proof
-balance_log (Nil) = trivial *** QED
-balance_log t@(Node v l r) 
-      | minHeight l < minHeight r = minHeight t == log2L (nodeCount t) 
-              === 1 + min (minHeight l) (minHeight r) == log2L (nodeCount t)
-              === minHeight l == log2L (div (nodeCount t) 2) ? balance_log l
-              *** QED
-      | otherwise = minHeight t == log2L (nodeCount t) 
-              === 1 + min (minHeight l) (minHeight r) == log2L (nodeCount t)
-              === minHeight r == log2L (div (nodeCount t) 2) ? balance_log r
-              *** QED
-
 {-@ corlary1 :: (Eq a) => { arr : Array a | nodeCount arr > 0 } -> { n : Nat | n > 1 && n < nodeCount arr } -> { not (even n) => ((div n 2) > 1 && (div n 2) < nodeCount (right arr)) && even n => ((div n 2) > 1 && (div n 2) < nodeCount (left arr)) } @-}
 corlary1 :: (Eq a) => Array a -> Int -> Proof
 corlary1 (Node v l r) n

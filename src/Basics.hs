@@ -1,5 +1,6 @@
 {-@ LIQUID "--no-termination" @-}
-
+{-@ LIQUID "--reflection" @-}
+{-@ LIQUID "--ple" @-}
 
 {-# LANGUAGE GADTs #-}
 
@@ -20,3 +21,14 @@ min x y = if x < y then x else y
 even :: Int -> Bool
 even i = i `mod` 2 == 0
 {-@ reflect even @-} {- Make all work -}
+
+{-@ inline abs @-}
+abs :: Integer  -> Integer
+abs i 
+  | i >= 0 = i
+  | otherwise = -i
+
+
+{-@ reflect intToInteger @-}
+intToInteger :: Int -> Integer
+intToInteger x = fromIntegral x
