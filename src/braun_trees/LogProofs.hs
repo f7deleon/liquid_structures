@@ -154,28 +154,28 @@ diff_nc t@(Node _ l r)
                                                 ? (2 + nodeCount l + nodeCount r <= 2 + nodeCount l + nodeCount l)
                                                 ? (2 + 2 * nodeCount l < pow2 (mh l + 2)
                                                 === nodeCount l + 1< pow2 (mh l + 1)
-                                                ? hm_node_count_limits2 l *** QED)
+                                                ? mh_node_count_limits2 l *** QED)
                                                 *** QED
   | mh l >= mh r && nodeCount l <= nodeCount r = nodeCount t + 1 < pow2 (h t) 
                                                 === 2 + nodeCount l + nodeCount r < pow2 (mh t + 1) 
                                                 ? (2 + nodeCount l + nodeCount r <= 2 + nodeCount r + nodeCount r)
                                                 ? (2 + 2 * nodeCount r < pow2 (mh r + 2)
                                                 === nodeCount r + 1 < pow2 (mh r + 1)
-                                                ? hm_node_count_limits2 r *** QED)
+                                                ? mh_node_count_limits2 r *** QED)
                                                 *** QED
   | mh l < mh r && nodeCount l < nodeCount r = nodeCount t + 1 < pow2 (h t) 
                                                 === nodeCount t + 1 < pow2 (mh t + 1)
-                                                ? hm_node_count_limits2 t
+                                                ? mh_node_count_limits2 t
                                                 *** QED
   | mh l >= mh r && nodeCount l > nodeCount r = nodeCount t + 1 < pow2 (h t) 
                                                 === nodeCount t + 1 < pow2 (mh t + 1)
-                                                ? hm_node_count_limits2 t
+                                                ? mh_node_count_limits2 t
                                                 *** QED
 
-{-@ hm_node_count_limits2 :: t : BTree a -> { nodeCount t + 1 < pow2 (mh t + 1)} @-}
-hm_node_count_limits2 :: Tree a -> Proof
-hm_node_count_limits2 (Nil) = nodeCount (Nil) + 1 < pow2 (mh Nil + 1) === 1 < pow2 (0 + 1) === 1 < 2 *** QED
-hm_node_count_limits2 t@(Node _ l r) 
+{-@ mh_node_count_limits2 :: t : BTree a -> { nodeCount t + 1 < pow2 (mh t + 1)} @-}
+mh_node_count_limits2 :: Tree a -> Proof
+mh_node_count_limits2 (Nil) = nodeCount (Nil) + 1 < pow2 (mh Nil + 1) === 1 < pow2 (0 + 1) === 1 < 2 *** QED
+mh_node_count_limits2 t@(Node _ l r) 
       | mh t + 1 == h t = nodeCount t + 1 < pow2 (mh t + 1) 
                         === nodeCount t + 1 < pow2 (mh t + 1)
                         === nodeCount t + 1 < pow2 (mh t + 1)
@@ -189,11 +189,11 @@ hm_node_count_limits2 t@(Node _ l r)
                           nodeCount t < pow2 (h t) ? corolary_node_max t *** QED 
                           )*** QED
 
-{-@ hm_to_log2L :: t : BTree a -> { log2L (nodeCount t + 1) == mh t } @-}
-hm_to_log2L :: Tree a -> Proof
-hm_to_log2L (Nil) = ()
-hm_to_log2L t@(Node _ Nil Nil) = log2L (nodeCount t + 1) == mh t === log2L (2) == 1 === 1 == 1 *** QED
-hm_to_log2L t@(Node _ l r) = log2L (nodeCount t + 1) == mh t 
+{-@ mh_to_log2L :: t : BTree a -> { log2L (nodeCount t + 1) == mh t } @-}
+mh_to_log2L :: Tree a -> Proof
+mh_to_log2L (Nil) = ()
+mh_to_log2L t@(Node _ Nil Nil) = log2L (nodeCount t + 1) == mh t === log2L (2) == 1 === 1 == 1 *** QED
+mh_to_log2L t@(Node _ l r) = log2L (nodeCount t + 1) == mh t 
                             ? (
                                 (
                                   nodeCount t + 1 >= pow2 (mh t)
@@ -204,7 +204,7 @@ hm_to_log2L t@(Node _ l r) = log2L (nodeCount t + 1) == mh t
                               &&&
                                 (
                                   nodeCount t + 1 < pow2 (mh t + 1)
-                                  ? hm_node_count_limits2 (t)
+                                  ? mh_node_count_limits2 (t)
                                   *** QED
                                 )
                               ***QED
@@ -212,25 +212,116 @@ hm_to_log2L t@(Node _ l r) = log2L (nodeCount t + 1) == mh t
                             ? log_limits (mh t) (nodeCount t + 1)
                             *** QED
 
-{-@ hm_to_log2H :: t : BTree a -> { ceilLog (nodeCount t + 1) == h t } @-}
-hm_to_log2H :: Tree a -> Proof
-hm_to_log2H (Nil) = ()
-hm_to_log2H t@(Node _ l r) 
-  | h t == mh t = ceilLog n == h t ? 
-    (pow2 (log2L (n)) == n  ? hm_to_log2L t
-      === pow2 (mh t) == nodeCount t + 1
-      === log2L (pow2 (mh t)) == log2L (nodeCount t + 1) ? log_identity (mh t)
-      === mh t == log2L (nodeCount t + 1) ? hm_to_log2L t
-      === log2L n == log2L n *** QED)
-      === log2L n == h t ? hm_to_log2L t
-      === mh t == h t *** QED 
-  | h t /= mh t = ceilLog n == h t ? 
-    (pow2 (log2L (n)) /= n  ? hm_to_log2L t
-      === pow2 (mh t) /= nodeCount t + 1
-      
-      === mh t /= mh t *** QED)
-      === log2L n == h t ? 
-where 
-    n = nodeCount t + 1
+{-@ pow_log2_equallity :: t : { BTree a | mh t == h t } -> { pow2 (log2L (nodeCount t + 1)) == nodeCount t + 1 } @-}
+pow_log2_equallity :: Tree a -> Proof
+pow_log2_equallity (Nil) = ()
+pow_log2_equallity t@(Node _ l r) = pow2 (log2L (nodeCount t + 1)) == nodeCount t + 1 ? mh_to_log2L t
+                              === pow2 (mh t) == nodeCount t + 1
+                              === pow2 (mh t) == nodeCount t + 1 
+                              === pow2 (mh t) - 1 == nodeCount t ?
+                                ((nodeCount t >= pow2 (mh t) - 1
+                                  ? node_count_min t *** QED)
+                                &&&
+                                (nodeCount t <= pow2 (mh t) -1
+                                ? node_count_max t *** QED))
+                              *** QED
 
+{-@ pow_log2_inequallity :: t : { BTree a | mh t + 1 == h t } -> { pow2 (log2L (nodeCount t + 1)) < nodeCount t + 1 }  @-}
+pow_log2_inequallity :: Tree a -> Proof
+pow_log2_inequallity t@(Node _ l r)  
+    | mh l < mh r && nodeCount l < nodeCount r = pow2 (log2L (nodeCount t + 1)) < nodeCount t + 1 ? mh_to_log2L t
+                            === pow2 (mh t) < nodeCount t + 1
+                            === pow2 (mh l + 1) < nodeCount t + 1
+                            === pow2 (mh l + 1) < 2 + nodeCount l + nodeCount r
+                            ? (nodeCount l + nodeCount l < nodeCount l + nodeCount r)
+                            ? (pow2 (mh l + 1) <= 2 * nodeCount l  + 2
+                                === 2 * pow2 (mh l) <= 2 * nodeCount l + 2
+                                === pow2 (mh l) <= nodeCount l + 1
+                                === pow2 (mh l) - 1 <= nodeCount l
+                                ? node_count_min l *** QED
+                                )
+                            *** QED
+    | mh l < mh r && nodeCount l >= nodeCount r = pow2 (log2L (nodeCount t + 1)) < nodeCount t + 1 ? mh_to_log2L t
+                            === pow2 (mh t) < nodeCount t + 1
+                            === pow2 (mh l + 1) < nodeCount t + 1
+                            === pow2 (mh l + 1) < 2 + nodeCount l + nodeCount r
+                            ? (pow2 (mh l + 1) < pow2 (mh r + 1))
+                            ? (pow2 (mh r +1) <= 2 + nodeCount l + nodeCount r 
+                              ? (2 + 2 * nodeCount r <= 2 + nodeCount l + nodeCount r)
+                              ? (
+                                  pow2 (mh r + 1) <= 2 + 2 * nodeCount r 
+                                  === pow2 (mh r) - 1 <= nodeCount r 
+                                  ? node_count_min r *** QED 
+                              ) *** QED
+                           ) *** QED
+    | mh l > mh r && nodeCount l > nodeCount r = pow2 (log2L (nodeCount t + 1)) < nodeCount t + 1 ? mh_to_log2L t
+                            === pow2 (mh t) < nodeCount t + 1
+                            === pow2 (mh r + 1) < nodeCount t + 1
+                            === pow2 (mh r + 1) < 2 + nodeCount l + nodeCount r
+                            ? (nodeCount r + nodeCount r < nodeCount l + nodeCount r)
+                            ? (pow2 (mh r + 1) <= 2 * nodeCount r  + 2
+                                === 2 * pow2 (mh r) <= 2 * nodeCount r + 2
+                                === pow2 (mh r) <= nodeCount r + 1
+                                === pow2 (mh r) - 1 <= nodeCount r
+                                ? node_count_min r *** QED
+                                )
+                            *** QED
+    | mh l > mh r && nodeCount l <= nodeCount r = pow2 (log2L (nodeCount t + 1)) < nodeCount t + 1 ? mh_to_log2L t
+                            === pow2 (mh t) < nodeCount t + 1
+                            === pow2 (mh r + 1) < nodeCount t + 1
+                            === pow2 (mh r + 1) < 2 + nodeCount l + nodeCount r
+                            ? (2 * nodeCount l + 2 <= 2 + nodeCount l + nodeCount r)
+                            ? (pow2 (mh r + 1) < 2 * nodeCount l + 2
+                                === pow2 (mh r) -1 < nodeCount l 
+                                ? (pow2 (mh r) -1 < pow2 (mh l) -1)
+                                ? (pow2 (mh l) -1 <= nodeCount l 
+                                ? node_count_min l *** QED)
+                                *** QED
+                              )
+                            *** QED
+    | mh l == mh r && nodeCount l > nodeCount r = pow2 (log2L (nodeCount t + 1)) < nodeCount t + 1 ? mh_to_log2L t
+                            === pow2 (mh t) < nodeCount t + 1
+                            === pow2 (mh r + 1) < nodeCount t + 1
+                            === pow2 (mh r + 1) < 2 + nodeCount r + nodeCount l
+                            ? (nodeCount l > nodeCount r)
+                            ? (pow2 (mh r + 1) <= 2 * nodeCount r + 2
+                               === pow2 (mh r) -1 <= nodeCount r ? node_count_min r  *** QED  
+                            )
+                             *** QED
+    | mh l == mh r && nodeCount l < nodeCount r = pow2 (log2L (nodeCount t + 1)) < nodeCount t + 1 ? mh_to_log2L t
+                            === pow2 (mh t) < nodeCount t + 1
+                            === pow2 (mh r + 1) < nodeCount t + 1
+                            === pow2 (mh l + 1) < 2 + nodeCount r + nodeCount l
+                            ? (nodeCount l < nodeCount r)
+                            ? (pow2 (mh l + 1) <= 2 * nodeCount l + 2
+                               === pow2 (mh l) -1 <= nodeCount l ? node_count_min l  *** QED  
+                            )
+                             *** QED
+    | mh l == mh r && h l + 1 == h t && nodeCount l == nodeCount r = pow2 (log2L (nodeCount t + 1)) < nodeCount t + 1 ? mh_to_log2L t
+                            === pow2 (mh t) < nodeCount t + 1
+                            === pow2 (mh r + 1) < nodeCount t + 1
+                            === pow2 (mh l + 1) < 2 + nodeCount l + nodeCount l
+                            === 2 * pow2 (mh l) < 2 + 2 * nodeCount l
+                            === pow2 (mh l) - 1 < nodeCount l ? pow_log2_inequallity l 
+                            *** QED
+    | mh l == mh r && h r + 1 == h t && nodeCount l == nodeCount r = pow2 (log2L (nodeCount t + 1)) < nodeCount t + 1 ? mh_to_log2L t
+                            === pow2 (mh t) < nodeCount t + 1
+                            === pow2 (mh r + 1) < nodeCount t + 1
+                            === pow2 (mh r + 1) < 2 + nodeCount l + nodeCount l
+                            === 2 * pow2 (mh r) < 2 + 2 * nodeCount r
+                            === pow2 (mh r) - 1 < nodeCount r ? pow_log2_inequallity r 
+                            *** QED
+
+{-@ h_to_log2H :: t : BTree a -> { ceilLog (nodeCount t + 1) == h t } @-}
+h_to_log2H :: Tree a -> Proof
+h_to_log2H (Nil) = ()
+h_to_log2H t@(Node _ l r) 
+  | h t == mh t = ceilLog n == h t ? (pow_log2_equallity t) 
+     === log2L (nodeCount t + 1) == h t ? mh_to_log2L t
+     === mh t == h t *** QED 
+  | h t == mh t + 1 = ceilLog n == h t ? (pow_log2_inequallity t) 
+     === log2L (nodeCount t + 1) + 1 == h t ? mh_to_log2L t
+     === mh t + 1 == h t *** QED 
+  where 
+    n = nodeCount t + 1
 
