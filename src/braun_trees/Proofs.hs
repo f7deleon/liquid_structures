@@ -13,6 +13,11 @@ import BasicOperations
 import ImprovedList
 import Basics
 
+{-@ bottom_tree ::  t1 : Tree () -> t2 : { Tree () | nodeCount t1 == nodeCount t2 } -> { t1 == t2 } @-}
+bottom_tree :: Tree () -> Tree () -> Proof
+bottom_tree _ _ = ()
+
+
 {-@ corlary1 :: (Eq a) => { arr : Array a | nodeCount arr > 0 } -> { n : Nat | n > 1 && n < nodeCount arr } -> { not (even n) => ((div n 2) > 1 && (div n 2) < nodeCount (right arr)) && even n => ((div n 2) > 1 && (div n 2) < nodeCount (left arr)) } @-}
 corlary1 :: (Eq a) => Array a -> Int -> Proof
 corlary1 (Node v l r) n

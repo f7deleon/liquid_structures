@@ -53,32 +53,6 @@ right (Node _ _ r) = r
 nodeCount :: Tree a -> Int
 nodeCount (Node _ l r) = 1 + nodeCount l + nodeCount r
 nodeCount Nil = 0
-{-
-{-@ measure nc @-}
-{-@ nc :: t : Tree a -> n : { Nat | n == nodeCount t } @-}
-nc :: Tree a -> Int
-nc (Node _ l r) = 1 + nc l + nc r
-nc (Nil) = 0 
--}
-
-{-@ reflect height @-}
-{-@ height :: t: Tree a -> i : { Nat | i >= minHeight t }  @-}
-height :: Tree a -> Int
-height (Node _ l r) = 1 + max (height l) (height r)
-height Nil = 0
-
-{-@ measure minHeight @-}
-{-@ minHeight :: t : Tree a -> Nat @-}
-minHeight :: Tree a -> Int
-minHeight (Node _ l r) = 1 + min (minHeight l) (minHeight r)
-minHeight Nil = 0
-
-{-@ reflect powTree @-}
-powTree :: Tree a -> Int
-powTree (Nil) = 1
-powTree (Node _ l r) 
-  | h l >= h r = 2 * (powTree l)
-  | otherwise = 2 * (powTree r)
 
 {-@ measure h @-}
 {-@ h :: t: Tree a -> i : { Nat | i >= mh t }  @-}
@@ -92,7 +66,7 @@ h (Node _ l r)
 h Nil = 0
 
 {-@ measure mh @-}
-{-@ mh :: t : Tree a -> Nat @-}
+{-@ mh :: t : Tree a -> i : { Nat | i <= h t } @-}
 mh :: Tree a -> Int
 mh (Node _ l r) 
     | ml < mr = 1 + ml
@@ -102,10 +76,11 @@ mh (Node _ l r)
      mr = mh r
 mh Nil = 0
 
-{-@ reflect balanced @-}
+{-@ measure balanced @-}
+{-@ balanced :: t : Tree a -> v : Bool @-}
 balanced :: Tree a -> Bool
 balanced (Nil) = True
-balanced t@(Node _ l r) = balanced l && balanced r && h t - mh t <= 1 
+balanced t@(Node _ l r) = balanced l && balanced r && abs (h t - mh t) <= 1 
 
 {-@ type BTree a = { t: Tree a | balanced t } @-}
 
@@ -123,6 +98,7 @@ log2L n
   | otherwise = 0
 
 {-@ reflect ceilLog @-}
+{-@ ceilLog :: n : Int -> r : { Int | log2L (n) <= r } @-}
 ceilLog :: Int -> Int
 ceilLog n
   | n <= 1    = 0

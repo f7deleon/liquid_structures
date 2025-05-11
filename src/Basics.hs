@@ -23,7 +23,7 @@ even i = i `mod` 2 == 0
 {-@ reflect even @-} {- Make all work -}
 
 {-@ inline abs @-}
-abs :: Integer  -> Integer
+abs :: Int -> Int
 abs i 
   | i >= 0 = i
   | otherwise = -i

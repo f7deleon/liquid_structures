@@ -13,6 +13,15 @@ import BasicOperations
 import ImprovedList
 import Basics
 
+{-@ node_count_max_inequallity_proof :: t : BTree a -> { nodeCount t + nodeCount t + 1 <= 2 * pow2 (h t) - 1 }  @-}
+node_count_max_inequallity_proof :: Tree a -> Proof
+node_count_max_inequallity_proof (Nil) = ()
+node_count_max_inequallity_proof t =nodeCount t + nodeCount t + 1 <= 2 * pow2 (h t) - 1
+                                === nodeCount t + nodeCount t + 1 <= 2 * pow2 (h t) - 1
+                                === 2 * nodeCount t <= 2 * pow2 (h t) - 2
+                                === nodeCount t <= pow2 (h t) - 1 ? node_count_max t
+                                *** QED
+
 {-@ node_count_max :: t :  BTree a -> { nodeCount t <= pow2 (h t) - 1} @-}
 node_count_max :: Tree a -> Proof
 node_count_max (Nil) = ()
@@ -22,23 +31,13 @@ node_count_max t@(Node _ l r)
                   === 1 + nodeCount l + nodeCount r <= pow2 (1 + h l) - 1
                   === 1 + nodeCount l + nodeCount r <= 2 * pow2 (h l) - 1 
                   ? (1 + nodeCount l + nodeCount r <=  1 + nodeCount l + nodeCount l) 
-                  ? (
-                      nodeCount l + nodeCount l + 1 <= 2 * pow2 (h l) - 1
-                      === 2 * nodeCount l <= 2 * pow2 (h l) - 2
-                      === nodeCount l <= pow2 (h l) - 1
-                      ? node_count_max l
-                      *** QED)
+                  ? node_count_max_inequallity_proof l
                   *** QED
       | h l < h r && nodeCount l <= nodeCount r = nodeCount t  <= pow2 (h t) - 1
                   === 1 + nodeCount l + nodeCount r <= pow2 (1 + h r) - 1
                   === 1 + nodeCount l + nodeCount r <= 2 * pow2 (h r) - 1 
                   ? (1 + nodeCount l + nodeCount r <= 1 + nodeCount r + nodeCount r) 
-                  ? (
-                      nodeCount r + nodeCount r + 1 <= 2 * pow2 (h r) - 1
-                      === 2 * nodeCount r <= 2 * pow2 (h r) -2
-                      === nodeCount r <= pow2 (h r) - 1
-                      ? node_count_max r
-                      *** QED)
+                  ? node_count_max_inequallity_proof r
                   *** QED
       | h l >= h r && nodeCount l < nodeCount r = nodeCount t <= pow2 (h t) -1
                   === 1 + nodeCount l + nodeCount r <= pow2 (1 + h l) -1
@@ -74,9 +73,6 @@ corolary_node_max t@(Node _ l r) = nodeCount t < pow2 (h t)
 {-@ node_count_min :: t: BTree a -> { nodeCount t >= pow2 (mh t) - 1 }  @-}                  
 node_count_min :: Tree a -> Proof 
 node_count_min (Nil) = ()
-node_count_min t@(Node _ Nil Nil) = ()
-node_count_min t@(Node _ Nil r) = ()
-node_count_min t@(Node _ l Nil) = ()
 node_count_min t@(Node _ l r) 
        | mh l < mh r && nodeCount l >= nodeCount r = nodeCount t  >= pow2 (mh t) - 1
                   === 1 + nodeCount l + nodeCount r >= pow2 (1 + mh l) - 1
@@ -189,28 +185,6 @@ mh_node_count_limits2 t@(Node _ l r)
                           nodeCount t < pow2 (h t) ? corolary_node_max t *** QED 
                           )*** QED
 
-{-@ mh_to_log2L :: t : BTree a -> { log2L (nodeCount t + 1) == mh t } @-}
-mh_to_log2L :: Tree a -> Proof
-mh_to_log2L (Nil) = ()
-mh_to_log2L t@(Node _ Nil Nil) = log2L (nodeCount t + 1) == mh t === log2L (2) == 1 === 1 == 1 *** QED
-mh_to_log2L t@(Node _ l r) = log2L (nodeCount t + 1) == mh t 
-                            ? (
-                                (
-                                  nodeCount t + 1 >= pow2 (mh t)
-                                  ? (pow2 (mh t) > pow2 (mh t) -1)
-                                  ? (nodeCount t + 1 >= pow2 (mh t) -1 ? node_count_min t) 
-                                  *** QED
-                                )
-                              &&&
-                                (
-                                  nodeCount t + 1 < pow2 (mh t + 1)
-                                  ? mh_node_count_limits2 (t)
-                                  *** QED
-                                )
-                              ***QED
-                            )
-                            ? log_limits (mh t) (nodeCount t + 1)
-                            *** QED
 
 {-@ pow_log2_equallity :: t : { BTree a | mh t == h t } -> { pow2 (log2L (nodeCount t + 1)) == nodeCount t + 1 } @-}
 pow_log2_equallity :: Tree a -> Proof
@@ -312,10 +286,32 @@ pow_log2_inequallity t@(Node _ l r)
                             === pow2 (mh r) - 1 < nodeCount r ? pow_log2_inequallity r 
                             *** QED
 
+
+{-@ mh_to_log2L :: t : BTree a -> { log2L (nodeCount t + 1) == mh t } @-}
+mh_to_log2L :: Tree a -> Proof
+mh_to_log2L t = log2L (nodeCount t + 1) == mh t 
+                            ? (
+                                (
+                                  nodeCount t + 1 >= pow2 (mh t)
+                                  ? (pow2 (mh t) > pow2 (mh t) -1)
+                                  ? (nodeCount t + 1 >= pow2 (mh t) -1 ? node_count_min t) 
+                                  *** QED
+                                )
+                              &&&
+                                (
+                                  nodeCount t + 1 < pow2 (mh t + 1)
+                                  ? mh_node_count_limits2 (t)
+                                  *** QED
+                                )
+                              ***QED
+                            )
+                            ? log_limits (mh t) (nodeCount t + 1)
+                            *** QED
+
 {-@ h_to_log2H :: t : BTree a -> { ceilLog (nodeCount t + 1) == h t } @-}
 h_to_log2H :: Tree a -> Proof
 h_to_log2H (Nil) = ()
-h_to_log2H t@(Node _ l r) 
+h_to_log2H t 
   | h t == mh t = ceilLog n == h t ? (pow_log2_equallity t) 
      === log2L (nodeCount t + 1) == h t ? mh_to_log2L t
      === mh t == h t *** QED 
@@ -325,3 +321,118 @@ h_to_log2H t@(Node _ l r)
   where 
     n = nodeCount t + 1
 
+{-@ log_substract :: i : Nat -> l : { Nat | abs (i - l) <= 1 } -> { abs (log2L i - log2L l) <= 1 }  @-}
+log_substract :: Int -> Int -> Proof
+log_substract 0 0 = ()
+log_substract 1 0 = ()
+log_substract 0 1 = ()
+log_substract 1 1 = ()
+log_substract i l  = abs (log2L i - log2L l) <= 1
+                      === abs (1 + log2L (div i 2) - 1 - log2L (div l 2)) <= 1
+                      === abs (log2L (div i 2) - log2L (div l 2)) <= 1
+                      ? log_substract (div i 2) (div l 2)
+                      *** QED
+
+{-@ log_substract2 :: i : { Nat | pow2 (log2L i) != i } -> l : { Nat | abs (i - l) <= 1 } -> { abs (log2L i + 1 - log2L l) <= 1 }  @-}
+log_substract2 :: Int -> Int -> Proof
+log_substract2 i l  
+        | pow2 (log2L (div i 2)) /= (div i 2) = abs (log2L i + 1 - log2L l) <= 1
+                      === abs (log2L (div i 2) + 2 - 1 - log2L (div l 2)) <= 1
+                      === abs (1 + log2L (div i 2) - log2L (div l 2)) <= 1
+                      ? log_substract2 (div i 2) (div l 2)
+                      *** QED
+        | otherwise = abs (log2L i + 1 - log2L l) <= 1
+                      === abs (log2L (div i 2) + 2 - 1 - log2L (div l 2)) <= 1
+                      === abs (1 + log2L (div i 2) - log2L (div l 2)) <= 1
+                      === 1 <= 1
+                      *** QED
+
+{-@ lema_2_2 :: x : a -> l : BTree a -> r : { BTree a | abs (nodeCount l - nodeCount r) <= 1 }-> { balanced (Node x l r) } @-}
+lema_2_2 :: (Eq a) => a -> Tree a -> Tree a -> Proof
+lema_2_2 v l r 
+    | pow2 (log2L (nodeCount l + 1)) == nodeCount l + 1&& h t == h l + 1 && mh t == mh l + 1 = balanced t 
+              === abs (h t - mh t) <= 1
+              === abs (h l - mh l) <= 1 ? h_to_log2H l
+              === abs (ceilLog (nodeCount l + 1) - mh l) <= 1 ? mh_to_log2L l 
+              === abs (ceilLog (nodeCount l + 1) - log2L (nodeCount l + 1)) <= 1
+              === abs (log2L (nodeCount l + 1) - log2L (nodeCount l + 1)) <= 1
+              *** QED
+    | pow2 (log2L (nodeCount l + 1)) == nodeCount l + 1 && h t == h l + 1 && mh t == mh r + 1 = balanced t 
+              === abs (h t - mh t) <= 1
+              === abs (h l - mh r) <= 1 ? h_to_log2H l
+              === abs (ceilLog (nodeCount l + 1) - mh r) <= 1 ? mh_to_log2L r 
+              === abs (ceilLog (nodeCount l + 1) - log2L (nodeCount r + 1)) <= 1
+              === abs (log2L (nodeCount l + 1) - log2L (nodeCount r + 1)) <= 1
+              ? log_substract (nodeCount l + 1) (nodeCount r + 1)
+              *** QED
+    | pow2 (log2L (nodeCount r + 1)) == nodeCount r + 1 && h t == h r + 1 && mh t == mh l + 1 = balanced t 
+              === abs (h t - mh t) <= 1
+              === abs (h r - mh l) <= 1 ? h_to_log2H r
+              === abs (ceilLog (nodeCount r + 1) - mh l) <= 1 ? mh_to_log2L l 
+              === abs (ceilLog (nodeCount r + 1) - log2L (nodeCount l + 1)) <= 1
+              === abs (log2L (nodeCount r + 1) - log2L (nodeCount l + 1)) <= 1
+              ? log_substract (nodeCount r + 1) (nodeCount l + 1)
+              *** QED
+    | pow2 (log2L (nodeCount r + 1)) == nodeCount r + 1 && h t == h r + 1 && mh t == mh r + 1 = balanced t 
+              === abs (h t - mh t) <= 1
+              === abs (h r - mh r) <= 1 ? h_to_log2H r
+              === abs (ceilLog (nodeCount r + 1) - mh r) <= 1 ? mh_to_log2L r 
+              === abs (ceilLog (nodeCount r + 1) - log2L (nodeCount r + 1)) <= 1
+              === abs (log2L (nodeCount r + 1) - log2L (nodeCount r + 1)) <= 1
+              *** QED
+    | pow2 (log2L (nodeCount l + 1)) /= nodeCount l + 1 && h t == h l + 1 && mh t == mh l + 1 = balanced t 
+              === abs (h t - mh t) <= 1
+              === abs (h l - mh l) <= 1 ? h_to_log2H l
+              === abs (ceilLog (nodeCount l + 1) - mh l) <= 1 ? mh_to_log2L l 
+              === abs (ceilLog (nodeCount l + 1) - log2L (nodeCount l + 1)) <= 1
+              === abs (log2L (nodeCount l + 1) + 1 - log2L (nodeCount l + 1)) <= 1
+              *** QED
+    | pow2 (log2L (nodeCount l + 1)) /= nodeCount l + 1 && h t == h l + 1 && mh t == mh r + 1 = balanced t 
+              === abs (h t - mh t) <= 1
+              === abs (h l - mh r) <= 1 ? h_to_log2H l
+              === abs (ceilLog (nodeCount l + 1) - mh r) <= 1 ? mh_to_log2L r 
+              === abs (ceilLog (nodeCount l + 1) - log2L (nodeCount r + 1)) <= 1
+              === abs (log2L (nodeCount l + 1) + 1 - log2L (nodeCount r + 1)) <= 1
+              ? log_substract2 (nodeCount l + 1) (nodeCount r + 1)
+              *** QED
+    | pow2 (log2L (nodeCount r + 1)) /= nodeCount r + 1 && h t == h r + 1 && mh t == mh l + 1 = balanced t 
+              === abs (h t - mh t) <= 1
+              === abs (h r - mh l) <= 1 ? h_to_log2H r
+              === abs (ceilLog (nodeCount r + 1) - mh l) <= 1 ? mh_to_log2L l 
+              === abs (ceilLog (nodeCount r + 1) - log2L (nodeCount l + 1)) <= 1
+              === abs (log2L (nodeCount r + 1) + 1 - log2L (nodeCount l + 1)) <= 1
+              ? log_substract2 (nodeCount r + 1) (nodeCount l + 1)
+              *** QED
+    | pow2 (log2L (nodeCount r + 1)) /= nodeCount r + 1 && h t == h r + 1 && mh t == mh r + 1 = balanced t 
+              === abs (h t - mh t) <= 1
+              === abs (h r - mh r) <= 1 ? h_to_log2H r
+              === abs (ceilLog (nodeCount r + 1) - mh r) <= 1 ? mh_to_log2L r 
+              === abs (ceilLog (nodeCount r + 1) - log2L (nodeCount r + 1)) <= 1
+              === abs (log2L (nodeCount r + 1) + 1- log2L (nodeCount r + 1)) <= 1
+              *** QED
+  where
+    t = Node v l r
+
+{-@ lema_2_3 :: t : { Tree a  | braun t } -> { balanced t }@-}
+lema_2_3 :: Tree a -> Proof
+lema_2_3 (Nil) = ()
+lema_2_3 t@(Node v l r) = balanced t 
+        ? (
+        (balanced l ? lema_2_3 l *** QED) 
+        &&&
+          (balanced r ? lema_2_3 r *** QED)
+        &&& 
+          (abs (h t - mh t) <= 1 ? lema_2_2 v l r 
+          *** QED)
+        )
+        *** QED
+{-
+{-@ lema_2_4 :: t : BTree a -> t2 : { BTree a | nodeCount t <= nodeCount t2 } -> { h t <= h t2 }   @-}
+lema_2_4 :: Tree a -> Tree a -> Proof
+lema_2_4 Nil Nil = ()
+lema_2_4 t t2 = h t <= h t2 ? h_to_log2H t
+                === ceilLog (nodeCount t + 1) <= h t2 ? h_to_log2H t2
+                === ceilLog (nodeCount t + 1) <= ceilLog (nodeCount t2 + 1)
+                *** QED
+
+-}
