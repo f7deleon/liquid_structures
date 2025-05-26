@@ -36,8 +36,8 @@ library
 --    ImprovedList
     BraunTree
     BasicOperations
-    LogProofs
---    Proofs
+    -- LogProofs
+    Proofs
     OptimizedOperations
   hs-source-dirs:
       src/,

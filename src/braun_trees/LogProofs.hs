@@ -347,9 +347,9 @@ log_substract2 i l
                       === 1 <= 1
                       *** QED
 
-{-@ lema_2_2 :: x : a -> l : BTree a -> r : { BTree a | abs (nodeCount l - nodeCount r) <= 1 }-> { balanced (Node x l r) } @-}
-lema_2_2 :: (Eq a) => a -> Tree a -> Tree a -> Proof
-lema_2_2 v l r 
+{-@ nc_diff_balanced_tree :: x : a -> l : BTree a -> r : { BTree a | abs (nodeCount l - nodeCount r) <= 1 }-> { balanced (Node x l r) } @-}
+nc_diff_balanced_tree :: (Eq a) => a -> Tree a -> Tree a -> Proof
+nc_diff_balanced_tree v l r 
     | pow2 (log2L (nodeCount l + 1)) == nodeCount l + 1&& h t == h l + 1 && mh t == mh l + 1 = balanced t 
               === abs (h t - mh t) <= 1
               === abs (h l - mh l) <= 1 ? h_to_log2H l
@@ -413,26 +413,21 @@ lema_2_2 v l r
   where
     t = Node v l r
 
-{-@ lema_2_3 :: t : { Tree a  | braun t } -> { balanced t }@-}
-lema_2_3 :: Tree a -> Proof
-lema_2_3 (Nil) = ()
-lema_2_3 t@(Node v l r) = balanced t 
-        ? (
-        (balanced l ? lema_2_3 l *** QED) 
-        &&&
-          (balanced r ? lema_2_3 r *** QED)
-        &&& 
-          (abs (h t - mh t) <= 1 ? lema_2_2 v l r 
-          *** QED)
-        )
+{-@ braun_is_balanced :: t : { Tree a  | braun t } -> { balanced t }@-}
+braun_is_balanced :: Tree a -> Proof
+braun_is_balanced (Nil) = ()
+braun_is_balanced t@(Node v l r) = balanced t 
+        === ((balanced l) && (balanced r ) && (abs (h t - mh t) <= 1)) ? braun_is_balanced l
+        === (balanced r &&  (abs (h t - mh t) <= 1)) ? braun_is_balanced r
+        === (abs (h t - mh t) <= 1) ? nc_diff_balanced_tree v l r
         *** QED
-{-
-{-@ lema_2_4 :: t : BTree a -> t2 : { BTree a | nodeCount t <= nodeCount t2 } -> { h t <= h t2 }   @-}
-lema_2_4 :: Tree a -> Tree a -> Proof
-lema_2_4 Nil Nil = ()
-lema_2_4 t t2 = h t <= h t2 ? h_to_log2H t
-                === ceilLog (nodeCount t + 1) <= h t2 ? h_to_log2H t2
-                === ceilLog (nodeCount t + 1) <= ceilLog (nodeCount t2 + 1)
-                *** QED
 
--}
+-- {-@ lema_2_4 :: t : BTree a -> t2 : { BTree a | nodeCount t <= nodeCount t2 } -> { h t <= h t2 }   @-}
+-- lema_2_4 :: Tree a -> Tree a -> Proof
+-- lema_2_4 Nil Nil = ()
+-- lema_2_4 t t2 = h t <= h t2 ? h_to_log2H t
+--                 === ceilLog (nodeCount t + 1) <= h t2 ? h_to_log2H t2
+--                 === ceilLog (nodeCount t + 1) <= ceilLog (nodeCount t2 + 1)
+--                 *** QED
+
+
