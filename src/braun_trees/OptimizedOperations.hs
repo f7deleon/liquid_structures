@@ -15,7 +15,7 @@ import ImprovedList
 
 {-@ reflect del_hi @-}
 {-@ del_hi :: n : Nat -> ArrayN a n -> { a : Array a | n > 0 => nodeCount a == n - 1  } @-}
-del_hi :: Int -> Array a -> Array a
+del_hi :: (Eq a) => Int -> Array a -> Array a
 del_hi _ Nil = Nil
 del_hi n (Node v l r)
   | n == 1 = Nil

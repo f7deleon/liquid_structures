@@ -6,7 +6,7 @@
 {-# LANGUAGE GADTs #-}
 
 module ImprovedList where
-import Prelude hiding (even, abs, max, min, exponent, lookup, take, drop, repeat, head, tail, concat)
+import Prelude hiding (even, abs, max, min, exponent, lookup, take, drop, repeat, head, tail, concat, change)
 import Basics
 
 
@@ -83,6 +83,12 @@ compleate :: Int -> a -> [a] -> [a]
 compleate 0 _ _ = []
 compleate n v [] = v : (compleate (n-1) v [])
 compleate n v (x:xs) = x : (compleate (n - 1) v xs)
+
+{-@ reflect change @-}
+{-@ change :: n : Nat -> a -> xs: {[a] | len xs > n }-> [a] @-}
+change :: Int -> a -> [a] -> [a]
+change 0 v (x:xs) = v:xs
+change n v (x:xs) = x:(change (n - 1) v xs)
 
 type List a = [a]
 {-@ type ListN a N = { l : [a] | len l == N } @-}
