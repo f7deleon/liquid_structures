@@ -80,7 +80,7 @@ mh Nil = 0
 {-@ balanced :: t : Tree a -> v : Bool @-}
 balanced :: Tree a -> Bool
 balanced (Nil) = True
-balanced t@(Node _ l r) = balanced l && balanced r && abs (h t - mh t) <= 1 
+balanced t@(Node _ l r) = balanced l && balanced r && h t - mh t <= 1 
 
 {-@ type BTree a = { t: Tree a | balanced t } @-}
 
@@ -98,12 +98,14 @@ log2L n
   | otherwise = 0
 
 {-@ reflect ceilLog @-}
-{-@ ceilLog :: n : Int -> r : { Int | log2L (n) <= r } @-}
+{-@ ceilLog :: n : Nat -> r : Nat @-}
 ceilLog :: Int -> Int
 ceilLog n
   | n <= 1    = 0
-  | pow2 (log2L n) == n = log2L n
-  | otherwise = log2L n + 1
+  | pow2 (result) == n = result
+  | otherwise = result + 1
+  where
+    result = log2L n
 
 {-@ reflect braun @-}
 {-@ braun :: Tree a -> Bool @-}

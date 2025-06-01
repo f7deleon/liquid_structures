@@ -5,7 +5,6 @@
 {-@ LIQUID "--ple" @-}
 
 
-{- Based on https://www.cs.uleth.ca/~gaur/post/avl/ representation -}
 module AVLTrees where
 import Prelude hiding (max,min, abs, max, min, exponent, lookup, take, drop, repeat, head, tail, concat, even)
 import GHC.TypeNats (Nat)
