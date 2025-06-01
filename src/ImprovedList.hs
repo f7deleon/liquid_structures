@@ -34,6 +34,13 @@ concat :: [a] -> [a] -> [a]
 concat [] ys = ys
 concat (x:xs) ys = x : concat xs ys
 
+
+{-@ concat2 :: xs: [a] -> y: a -> zs: { [a] | len zs == len xs + 1 }@-}
+{-@ reflect concat2 @-}
+concat2 :: [a] -> a -> [a]
+concat2 [] ys = [ys]
+concat2 (x:xs) ys = x : concat2 xs ys
+
 {-@ measure notEmptyL @-}
 {-@ notEmptyL :: xs: [a] -> v :{ Bool | (v <=> len xs > 0) && (v <=> not (isEmptyL xs)) }@-}
 notEmptyL :: [a] -> Bool

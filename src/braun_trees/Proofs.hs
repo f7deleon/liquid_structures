@@ -8,7 +8,11 @@
 
 module Proofs where
 import Language.Haskell.Liquid.ProofCombinators
+<<<<<<< Updated upstream
 import Prelude hiding (even, abs, max, min, exponent, take, drop, repeat, head, tail, lookup,dropLast)
+=======
+import Prelude hiding (even, abs, max, min, exponent, take, drop, repeat, head, tail, lookup,concat2)
+>>>>>>> Stashed changes
 import BraunTree
 import BasicOperations
 import ImprovedList
@@ -177,3 +181,50 @@ listDelHigh arr@(Node v l r)
                 *** QED
   where
     n = nodeCount arr
+-- {-@ ple listDel @-}
+-- {-@ listDel :: (Eq a) => arr:  Array a -> { btail (list arr) == list (del_lo arr) } @-}
+-- listDel :: (Eq a) => Array a -> Proof
+-- listDel (Nil) = ()
+-- listDel arr@(Node v l r) = btail (list arr) == list (del_lo arr)
+--                 === btail (v : (splice (list l) (list r))) == list (merge l r)
+--                 === (splice (list l) (list r)) == list (merge l r) ? spliceMergeEq l r
+--                 *** QED
+
+-- {-@ updateAdd :: arr: Array a -> x : a -> { list (update1 (nodeCount arr + 1) x arr) == concat2 (list (arr)) x } @-} 
+-- updateAdd ::(Eq a) => Array a -> a -> Proof
+-- updateAdd Nil v = list (update1 (1) v Nil) == concat2 (list (Nil)) v 
+--                 === ([v] == [v]) *** QED
+-- updateAdd t@(Node v  Nil Nil) x = list (update1 (2) x t) == concat2 (list (t)) x 
+--                 === list (Node v (Node x Nil Nil) Nil) == concat2 [v] x
+--                 === v : x : [] == v : x : []
+--                 *** QED
+-- updateAdd t@(Node v l r) x 
+--     | even n = list (Node v (update1 (div n 2) x l) r) == concat2 (list (t)) x 
+--               === v : (splice (list (update1 (div n 2) x l)) (list r)) == v : (concat2 (splice (list l) (list r)) x) ? updateAdd l x
+--               === v : (splice (concat2 (list l) x) (list r)) == v : (concat2 (splice (list l) (list r)) x) ? concat2Splice x (list l) (list r)
+--               *** QED
+--     | otherwise = list (Node v l (update1 (div n 2) x r)) == concat2 (list (t)) x
+--             === v : (splice (list l) (list (update1 (div n 2) x r))) == v : (concat2 (splice (list l) (list r)) x) ? updateAdd r x
+--             === v : splice (list l) (concat2 (list r) x) == v : (concat2 (splice (list l) (list r)) x) ? concat2Splice2 x (list l) (list r)
+--             *** QED
+--     where 
+--       n = nodeCount t + 1
+
+-- {-@ concat2Splice :: v: a -> xs : [a] -> ys : { [a] | length2 xs == length2 ys + 1 } -> { concat2 (splice xs ys) v == splice (concat2 xs v) ys } @-}
+-- concat2Splice ::(Eq a) => a -> [a] -> [a] -> Proof
+-- concat2Splice v (x:[]) ([]) = concat2 (splice [x] []) v == splice (concat2 [x] v) []
+--                               === x:v:[] == x:v:[]
+--                               ***QED                          
+-- concat2Splice v l1@(x:xs) l2@(y:ys) = concat2 (splice l1 l2) v == splice (concat2 l1 v) l2 
+--                               === (concat2 (splice l2 xs) v) == (splice l2 (concat2 xs v)) ? concat2Splice2 v l2 xs
+--                               *** QED
+
+-- {-@ concat2Splice2 :: v: a -> xs : [a] -> ys : { [a] | length2 xs == length2 ys } -> { concat2 (splice xs ys) v == splice xs (concat2 ys v) } @-}
+-- concat2Splice2 :: (Eq a) => a -> [a] -> [a] -> Proof
+-- concat2Splice2 v ([]) ([]) = concat2 (splice [] []) v == splice [] (concat2 [] v)
+--                               === concat2 (splice [] []) v == splice [] (concat2 [] v) 
+--                               === v:[] == v:[]
+--                               *** QED
+-- concat2Splice2 v l1@(x:xs) l2@(y:ys) = concat2 (splice l1 l2) v == splice l1 (concat2 l2 v) 
+--                               === (concat2 (splice l2 xs) v) == (splice (concat2 l2 v) xs) ? concat2Splice v l2 xs
+--                               *** QED
