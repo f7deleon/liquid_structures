@@ -75,3 +75,7 @@ len arr = nodeCount arr
 array :: (Eq a) => [a] -> Array a
 array xs = adds xs 0 Nil
 
+{-@ length :: arr : Array a
+           -> { n : Nat | nodeCount arr == n } @-}
+length :: Array a -> Int
+length arr = nodeCount arr

@@ -12,7 +12,7 @@ import ImprovedList
 import Basics
 
 data Tree a where
-  Node :: (Eq a) => a -> Tree a -> Tree a -> Tree a
+  Node :: a -> Tree a -> Tree a -> Tree a
   Nil :: Tree a
 
 deriving instance (Eq a, Show a) => Show (Tree a)

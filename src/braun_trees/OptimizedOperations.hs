@@ -68,20 +68,20 @@ lh :: Array a -> Int
 lh Nil = 0
 lh (Node _ l _) = 1 + lh l
 
--- {-@ reflect braun2_of @-}
--- {-@ braun2_of :: a -> n : Nat -> (ArrayN a {n + 1}, ArrayN a n) @-}
--- braun2_of :: (Eq a) => a -> Int -> (Array a, Array a)
--- braun2_of x 0 = (singleton x, Nil)
--- braun2_of x n
---   | even n = let (s,t) = braun2_of x (div (n-2) 2) in (makeT x s s, makeT x s t)
---   | otherwise = let (s,t) = braun2_of x (div (n-1) 2) in (makeT x s t, makeT x t t)
+{-@ reflect braun2_of @-}
+{-@ braun2_of :: a -> n : Nat -> (ArrayN a {n + 1}, ArrayN a n) @-}
+braun2_of :: (Eq a) => a -> Int -> (Array a, Array a)
+braun2_of x 0 = (singleton x, Nil)
+braun2_of x n
+  | even n = let (s,t) = braun2_of x (div (n-2) 2) in (makeT x s s, makeT x s t)
+  | otherwise = let (s,t) = braun2_of x (div (n-1) 2) in (makeT x s t, makeT x t t)
 
--- {-@ reflect braun_of @-}
--- {-@ braun_of :: a -> n: Nat -> ArrayN a n @-}
--- braun_of :: (Eq a) => a -> Int -> Array a
--- braun_of x n = t
---     where
---         (_, t) = (braun2_of x n)
+{-@ reflect braun_of @-}
+{-@ braun_of :: a -> n: Nat -> ArrayN a n @-}
+braun_of :: (Eq a) => a -> Int -> Array a
+braun_of x n = t
+    where
+        (_, t) = (braun2_of x n)
 
 -- {-@ delete_node :: n: { Nat | n > 0 } -> arr : ArrayGE a n -> res : { Array a | nodeCount res == nodeCount arr - 1 } @-}
 -- delete_node :: (Eq a) => Int -> Array a -> Array a

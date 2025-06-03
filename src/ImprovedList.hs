@@ -28,17 +28,17 @@ drop _ [] = []
 drop 0 xs = xs
 drop n (x:xs) = (drop (n-1) xs)
 
-{-@ concat :: xs: [a] -> ys: [a] -> zs: { [a] | len zs == len xs + len ys }@-}
+{-@ concat :: xs: [a] -> ys: [a] -> zs: { [a] | len zs == len xs + len ys } / [len xs]@-}
 {-@ reflect concat @-}
 concat :: [a] -> [a] -> [a]
 concat [] ys = ys
 concat (x:xs) ys = x : concat xs ys
 
 
-{-@ concat2 :: xs: [a] -> y: a -> zs: { [a] | len zs == len xs + 1 }@-}
+{-@ concat2 :: xs: [a] -> y: a -> zs: { [a] | len zs == len xs + 1 } / [len xs] @-}
 {-@ reflect concat2 @-}
 concat2 :: [a] -> a -> [a]
-concat2 [] ys = [ys]
+concat2 [] ys = ys:[]
 concat2 (x:xs) ys = x : concat2 xs ys
 
 {-@ measure notEmptyL @-}

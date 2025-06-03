@@ -85,3 +85,25 @@ node_count_height_pow t@(Node _ l r)
                   *** QED
 
 
+
+-@ updateList :: arr: Array a -> x : [a] -> { list (adds xs (nodeCount arr) arr) == concat (list arr) xs } @-} 
+updateList ::(Eq a) => Array a -> [a] -> Proof
+updateList Nil (z:zs) = list (adds zs (nodeCount arr) arr) == concat (list (Nil)) zs
+            === list (adds (z:zs)) (0) Nil) == concat ([]) (z:zs)
+            === z : (list (adds xs (0) Nil)) == z : zs ? updateList Nil zs
+            *** QED
+updateList t@(Node v l r) (z:zs)
+    | even (n + 1) = list (update1 (n + 1) x t) == concat (list t) x 
+            === list (Node v (update1 (div (n + 1) 2) x l) r) == concat (list t) x 
+            === (splice (list (update1 (div (n + 1) 2) x l)) (list r)) == (concat (splice (list l) (list r)) x) ? updateAdd l x
+            === (splice (concat (list l) x) (list r)) == (concat (splice (list l) (list r)) x) ? concatSplice (list l) (list r) x
+            ===  (concat (splice (list l) (list r)) x) == (concat (splice (list l) (list r)) x)
+            *** QED
+    | otherwise = list (update1 (n + 1) x t) == concat (list t) x
+            === list (Node v l (update1 (div (n + 1) 2) x r)) == concat (list (t)) x
+            === (splice (list l) (list (update1 (div (n + 1) 2) x r))) == (concat (splice (list l) (list r)) x) ? updateAdd r x
+            === (splice (list l) (concat (list r) x)) == (concat (splice (list l) (list r)) x) ? concatSplice2 (list l) (list r) x
+            === (concat (splice (list l) (list r)) x) == (concat (splice (list l) (list r)) x)
+            *** QED
+    where 
+      n = nodeCount t

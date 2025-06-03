@@ -1,7 +1,6 @@
 {-@ LIQUID "--no-termination" @-}
 {-@ LIQUID "--reflection" @-}
 {-@ LIQUID "--ple" @-}
-
 {-# LANGUAGE GADTs #-}
 
 module Basics where
@@ -20,7 +19,7 @@ min x y = if x < y then x else y
 {-@ even :: n : Int -> Bool @-}
 even :: Int -> Bool
 even i = i `mod` 2 == 0
-{-@ reflect even @-} {- Make all work -}
+{-@ inline even @-} {- Make all work -}
 
 {-@ inline abs @-}
 abs :: Int -> Int
